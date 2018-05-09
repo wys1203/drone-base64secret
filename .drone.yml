@@ -1,0 +1,23 @@
+workspace:
+  base: /go
+  path: /src/github.com/wys1203/drone-secret2file
+
+clone:
+  git:
+    image: plugins/git
+    depth: 50
+    tags: true
+
+pipeline:
+  test:
+    image: wys1203/drone-json2file
+    secrets:
+      - source: config
+      - target: plugin_input
+    # input: string 
+    output:
+      - json
+      - dotenv
+      - yml
+    
+    

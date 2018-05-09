@@ -1,0 +1,43 @@
+version: '2'
+
+services:
+  database:
+    image: postgres:alpine
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+    ports:
+      - 5433:5432
+
+  drone-server:
+    image: drone/drone
+    ports:
+      - 8080:8000
+      - 9000
+    volumes:
+      - ./tmp/drone:/var/lib/drone/
+    restart: always
+    environment:
+      - DRONE_OPEN=true
+      - DRONE_HOST=https://402940be.ngrok.io
+      - DRONE_GITHUB=true
+      - DRONE_GITHUB_CLIENT=9f581942d2d6effc59d5
+      - DRONE_GITHUB_SECRET=e8fe8f49d853cfb4a9d8ae12cfd9cc4337d83457
+      - DRONE_SECRET=DRONE_SECRET
+      - DRONE_DATABASE_DRIVER=postgres
+      - DRONE_DATABASE_DATASOURCE=postgres://postgres:postgres@database/postgres?sslmode=disable
+    depends_on:
+      - database
+
+  drone-agent:
+    image: drone/agent
+    command: agent
+    restart: always
+    depends_on:
+      - drone-server
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - DRONE_SERVER=drone-server:9000
+      - DRONE_SECRET=DRONE_SECRET
